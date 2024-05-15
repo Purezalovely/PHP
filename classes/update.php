@@ -1,52 +1,49 @@
 <?php
-
 require_once('classes/database.php');
-
 $con = new database();
-if (isset($_POST['multisave'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $username =$_POST['username'];
-    $password=$_POST['password'];
-    $firstName=$_POST['firstName'];
-    $lastName=$_POST['lastName'];
-    $birthday=$_POST['birthday'];
-    $sex=$_POST['sex'];
-    //address information
-    $province = $_POST['province'];
-    $barangay = $_POST['barangay'];
-    $street= $_POST['street'];
-    $city = $_POST['city'];
-    $confirm = $_POST['c_password'];
-    
-    
-    
-    if ($password == $confirm) {
-        // Passwords match, proceed with signup
-        $user_id = $con->signupUser($username, $password, $firstName, $lastName, $birthday, $sex); // Insert into users table and get user_id
-        if ($user_id) {
-            // Signup successful, insert address into users_address table
-            if ($con->insertAddress($user_id, $city, $province, $barangay, $street)) {
-                // Address insertion successful, redirect to login page
-                header('location:login.php');
-                exit();
-            } else {
-                // Address insertion failed, display error message
-                $error = "Error occurred while signing up. Please try again.";
-            }
-        } else {
-            // User insertion failed, display error message
-            $error = "Error occurred while signing up. Please try again.";
-        }
-    } else {
-        // Passwords don't match, display error message
-        $error = "Passwords did not match. Please try again.";
+
+if (empty($_POST['id'])) {
+    header('localation:index.php');
+    }else{
+        $id = $_POST['id'];
+        $data = $con->viewdata($id);
     }
-}
+    if (isset($_POST['update'])) 
+     $username = $_POST['username'];
+     $password = $_POST['password'];
+     $username =$_POST['username'];
+     $password=$_POST['password'];
+     $firstName=$_POST['firstName'];
+     $lastName=$_POST['lastName'];
+     $birthday=$_POST['birthday'];
+     $sex=$_POST['sex'];
+     //address information
+     $province = $_POST['province'];
+     $barangay = $_POST['barangay'];
+     $street= $_POST['street'];
+     $city = $_POST['city'];
+     $confirm = $_POST['c_password'];
+     //userid
+     $user_id = $_POST['id'];
+    
+     if ($password == $confirm) { // Passwords match, proceed with signup
+        if ($con->UpdateUser($user_id, $username, $password, $firstName, $lastName, $birthday, $sex)) { // Insert into users table and get user_id
+            if ($user_id) { // Signup successful, insert address into users_address table
+                if ($con->UpdateUserAddress($user_id, $city, $province, $barangay, $street)) { // Address insertion successful
+                    // Redirect to login page
+                    header('location: login.php');
+                    exit();
+                } else { // Address insertion failed, display error message
+                    $error = "Error occurred while signing up. Please try again.";
+                }
+            } else { // user update failed
+                $error = "Error occurred while updating user information. Please try again.";
+            }
+        }
+    }
+
+    
 ?>
-
-
- 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -72,7 +69,7 @@ if (isset($_POST['multisave'])) {
 <body>
 
 <div class="container custom-container rounded-3 shadow my-5 p-3 px-5">
-  <h3 class="text-center mt-4"> Registration Form</h3>
+  <h3 class="text-center mt-4"> Update Form</h3>
 
   <form method="post">
     <!-- Personal Information -->
@@ -82,22 +79,24 @@ if (isset($_POST['multisave'])) {
         <div class="form-row">
           <div class="form-group col-md-6 col-sm-12">
             <label for="firstName">FirstName:</label>
-            <input type="text" class="form-control" name="firstName" placeholder="Enter first name">
+            <input type="text" class="form-control" name="firstName" value="<?php echo $data['Firstname'];?>" placeholder="Enter first name">
           </div>
           <div class="form-group col-md-6 col-sm-12">
             <label for="lastName">LastName:</label>
-            <input type="text" class="form-control" name="lastName" placeholder="Enter last name">
+            <input type="text" class="form-control" name="lastName" value="<?php echo $data['Lastname'];?>"placeholder="Enter last name">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group col-md-6">
             <label for="birthday">Birthday:</label>
-            <input type="date" class="form-control" name="birthday">
+            <input type="date" class="form-control" name="birthday" value="<?php echo $data['birthday'];?>">
           </div>
           <div class="form-group col-md-6">
             <label for="sex">Sex:</label>
             <select class="form-control" name="sex">
-              <option selected>Select Sex</option>
+              <option value="Male" <?php if ($data['user_sex']) echo 'selected'; ?>>Male</option>
+              <option value="Female" <?php if ($data['user_sex']) echo 'selected'; ?>>Female</option>
+
               <option>Male</option>
               <option>Female</option>
             </select>
@@ -105,15 +104,15 @@ if (isset($_POST['multisave'])) {
         </div>
         <div class="form-group">
           <label for="username">Username:</label>
-          <input type="text" class="form-control" name="username" placeholder="Enter username">
+          <input type="text" class="form-control" name="username" placeholder="Enter username" value="<?php echo $data['username'];?>">
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" class="form-control" name="password" placeholder="Enter password">
+          <input type="password" class="form-control" name="password" placeholder="Enter password" value="<?php echo $data['passwords'];?>">
         </div>
         <div class="form-group">
           <label for="password">c_password:</label>
-          <input type="password" class="form-control" name="c_password" placeholder="Enter password">
+          <input type="password" class="form-control" name="c_password" placeholder="Enter password" value="<?php echo $data['c_password'];?>">
         </div>
       </div>
     </div>
@@ -147,8 +146,9 @@ if (isset($_POST['multisave'])) {
     
     <div class="container">
     <div class="row justify-content-center gx-0">
-        <div class="col-lg-3 col-md-4"> 
-            <input type="submit" name="multisave" class="btn btn-outline-primary btn-block mt-4" value="Sign Up">
+        <div class="col-lg-3 col-md-4">
+        <input type="hidden" name="id"value="<?php echo $data ['user_id'];?>">
+        <input type="submit" name="update" class="btn btn-outline-primary btn-block mt-4" value="Sign Up">
         </div>
         <div class="col-lg-3 col-md-4"> 
             <a class="btn btn-outline-danger btn-block mt-4" href="login.php">Go Back</a>

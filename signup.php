@@ -65,7 +65,7 @@ if ($con->signup($username, $password, $confirm, $firstname, $lastname, $birthda
    
     <div class="mb-3">
     <label for="sex" class="form-label">sex:</label>
-    <select class="form-select" name="sex">
+    <select class="form-select" name="sex"> 
     <option selected disabled>Select sex</option>
     <option value="male">Male</option>
     <option value="female">Female</option>
