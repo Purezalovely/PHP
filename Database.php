@@ -51,10 +51,10 @@ return  $con->query($query)->fetch();
             $con = $this->opencon();
             $con->beginTransaction();
  
-            $qeury = $con->prepare("DELETE FROM user_address WHERE user_id =?");
-            $qeury->execute([$id]);
+            $query = $con->prepare("DELETE FROM user_address WHERE user_id =?");
+            $query->execute([$id]);
  
-            $query2 = $con->prepare("DELETE FROM user WHERE user_id =?");
+            $query = $con->prepare("DELETE FROM userss WHERE user_id =?");
            
             $con->commit();
             return true;
@@ -81,7 +81,7 @@ return  $con->query($query)->fetch();
             $con->beginTransaction();
             $query = $con->prepare("UPDATE userss SET user_Firstname=?,user_Lastname=?,user_birthday=?,user_sex=?,user_name=?,user_pass=? WHERE user_id=?");
             $query->execute([$firstname, $lastname, $birthday, $sex, $username, $password, $user_id]);
-
+             
             $con->commit();
         } catch(PDOException $e) {
             $con->rollBack(); 

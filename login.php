@@ -1,17 +1,20 @@
 <?php
-require_once('classes/database.php');
+require_once('Database.php');
 $con = new database();
+session_start();
+if (isset($_SESSION['username'])) {
+  header('location:index.php');
+}
 ?>
 
-<div class="container-fluid login-container rounded shadow">
-  <h2 class="text-center mb-4">Login</h2>
+
 <?php
 if(isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
     $result = $con->check($username,$password);
     if($result){
-        if ($result['username'] == $_POST['username'] && $result['passwords'] == $_POST['password']) {
+        if ($result['username'] == $_POST['username'] && $result['passwords'] == $_POST['passwords']) {
             $_SESSION['username'] = $result['username'];
             header('location:index.php');
     }
@@ -42,6 +45,9 @@ if(isset($_POST['login'])) {
   </style>
 </head>
 <body>
+
+<div class="container-fluid login-container rounded shadow">
+  <h2 class="text-center mb-4">Login</h2>
  
 
   <form method="post">

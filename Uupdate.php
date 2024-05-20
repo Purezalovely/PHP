@@ -1,13 +1,20 @@
 <?php
-require_once('classes/database.php');
+require_once('Database.php');
 $con = new database();
 
+if (empty($_SESSION['username'])) {
+    header('location:login.php');
+  }
+
 if (empty($_POST['id'])) {
-    header('localation:index.php');
+    header('location:index.php');
+
     }else{
         $id = $_POST['id'];
+        echo $id;
         $data = $con->viewdata($id);
     }
+
     if (isset($_POST['update'])) 
      $username = $_POST['username'];
      $password = $_POST['password'];
@@ -23,6 +30,7 @@ if (empty($_POST['id'])) {
      $street= $_POST['street'];
      $city = $_POST['city'];
      $confirm = $_POST['c_password'];
+
      //userid
      $user_id = $_POST['id'];
     
@@ -67,6 +75,8 @@ if (empty($_POST['id'])) {
 
 </head>
 <body>
+
+
 
 <div class="container custom-container rounded-3 shadow my-5 p-3 px-5">
   <h3 class="text-center mt-4"> Update Form</h3>
@@ -123,21 +133,21 @@ if (empty($_POST['id'])) {
       <div class="card-body">
         <div class="form-group">
           <label for="street">Street:</label>
-          <input type="text" class="form-control" name="street" placeholder="Enter street">
+          <input type="text" class="form-control" name="street" placeholder="Enter street" value="<?php echo $data['street'];?>">
         </div>
         <div class="form-row">
           <div class="form-group col-md-6">
             <label for="barangay">Barangay:</label>
-            <input type="text" class="form-control" name="barangay" placeholder="Enter barangay">
+            <input type="text" class="form-control" name="barangay" placeholder="Enter barangay" value="<?php echo $data['Barangay'];?>">
           </div>
           <div class="form-group col-md-6">
             <label for="city">City:</label>
-            <input type="text" class="form-control" name="city" placeholder="Enter city">
+            <input type="text" class="form-control" name="city" placeholder="Enter city" value="<?php echo $data['City'];?>">
           </div>
         </div>
         <div class="form-group">
           <label for="province">Province:</label>
-          <input type="text" class="form-control" name="province" placeholder="Enter province">
+          <input type="text" class="form-control" name="province" placeholder="Enter province" value="<?php echo $data['Province'];?>">
         </div>
       </div>
     </div>

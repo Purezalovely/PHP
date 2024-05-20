@@ -1,7 +1,11 @@
 <?php
-require_once('classes/database.php');
+require_once('Database.php');
 $con = new database();
- 
+session_start();
+if (empty($_SESSION['username'])) {
+  header('location:login.php');
+}
+
 if(isset($_POST['delete'])) {
   $id = $_POST['id'];
   if($con->delete($id)) {
@@ -11,6 +15,7 @@ if(isset($_POST['delete'])) {
       echo "Error occurred while deleting."; // Added error message for the else condition
   }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,6 +32,8 @@ if(isset($_POST['delete'])) {
 </head>
 <body>
  
+<?php include('includes/navbar.php'); ?>
+
 <div class="container user-info rounded shadow p-3 my-2">
 <h2 class="text-center mb-2">User Table</h2>
   <div class="table-responsive text-center">
@@ -61,15 +68,15 @@ if(isset($_POST['delete'])) {
           <td><?php echo $rows['address'];?></td>
           <td>
             
-       
+ <!-- Update button -->      
           <form action="update.php" method="POST" style="display: inline;">
-    <input type="hidden" name="id" value="<?php echo $data['user_id']; ?>">
-    <input type="submit" name="Update" value="Update">
+    <input type="hidden" name="id" value="<?php echo $rows['user_id'];?>">
+    <input type="submit" value="Update" class="btn btn-primary btn-sm">
 </form>
         <!-- Delete button -->
         <form method="POST" style="display: inline;">
             <input type="hidden" name="id" value="<?php echo $rows ['user_id'];?>">
-            <input type="submit" value="Delete" name="delete" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">
+            <input type="submit" name="Delete" value="Delete" class="btn btn-danger btn-sm"  onclick="return confirm('Are you sure you want to delete this user?')">
         </form>
           </td>
         </tr>

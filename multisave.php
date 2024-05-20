@@ -1,6 +1,6 @@
 <?php
 
-require_once('classes/database.php');
+require_once('Database.php');
 
 $con = new database();
 if (isset($_POST['multisave'])) {
