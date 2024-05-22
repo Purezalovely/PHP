@@ -3,7 +3,7 @@ require_once('Database.php');
 $con = new database();
 session_start();
 if (isset($_SESSION['username'])) {
-  header('location:index.php');
+  header('location:register.php');
 }
 ?>
 
@@ -14,7 +14,7 @@ if(isset($_POST['login'])) {
     $password = $_POST['password'];
     $result = $con->check($username,$password);
     if($result){
-        if ($result['username'] == $_POST['username'] && $result['passwords'] == $_POST['passwords']) {
+        if ($result['username'] == $_POST['username'] && $result['passwords'] == $_POST['password']) {
             $_SESSION['username'] = $result['username'];
             header('location:index.php');
     }
@@ -22,6 +22,8 @@ if(isset($_POST['login'])) {
        
  }
  else { echo "error";}
+
+ 
 }
  
 ?>

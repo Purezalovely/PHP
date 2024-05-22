@@ -21,28 +21,45 @@ return  $con->query($query)->fetch();
         }
         return $con->prepare("INSERT INTO userss (username, passwords, Firstname, Lastname, birthday, sex) VALUES (?,?,?,?,?,?)") ->execute([$username, $password, $firstname, $lastname, $birthday, $sex]);
     }
-    function signupUser($username, $password, $firstName, $lastName, $birthday, $sex) {
-        $con = $this->opencon();
-   
-        $query = $con->prepare("SELECT username FROM userss WHERE username = ?");
-        $query->execute([$username]);
-        $existingUser = $query->fetch();
-        if ($existingUser){
-            return false;
-        }
-        $query = $con->prepare("INSERT INTO userss (username, passwords, firstname, lastname, birthday, sex) VALUES (?, ?, ?, ?, ?,?)");
-        $query->execute([$username, $password, $firstName, $lastName, $birthday, $sex]);
-       return $con->lastInsertId();
-    }function insertAddress($user_id, $city, $province, $street, $barangay) {
-        $con = $this->opencon();
-        return $con->prepare("INSERT INTO user_addresss (user_id, user_add_city, user_add_province, user_add_street, user_add_barangay) VALUES (?, ?, ?, ?, ?)")
-            ->execute([$user_id, $city, $province, $street, $barangay]);
-    }
 
-    function view ()
+    function signupUser($firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture)
     {
         $con = $this->opencon();
-        return $con->query("SELECT userss.user_id, userss.username, userss.passwords, userss.firstname, userss.lastname, userss.birthday, userss.sex, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;")
+        // Save user data along with profile picture path to the database
+        $con->prepare("INSERT INTO userss (Firstname, Lastname, userss.birthday, sex, user_email, username, passwords, user_profile_picture) VALUES (?,?,?,?,?,?,?,?)")->execute([$firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture]);
+        return $con->lastInsertId();
+        }
+        function insertAddress($user_id, $street, $barangay, $city, $province)
+    {
+        $con = $this->opencon();
+        return $con->prepare("INSERT INTO user_addresss (user_id, user_add_street, user_add_barangay, user_add_city, user_add_province) VALUES (?,?,?,?,?)")->execute([$user_id, $street, $barangay,  $city, $province]);
+          
+    }
+
+    // function signupUser($username, $password, $firstName, $lastName, $birthday, $sex) {
+    //     $con = $this->opencon();
+   
+    //     $query = $con->prepare("SELECT username FROM userss WHERE username = ?");
+    //     $query->execute([$username]);
+    //     $existingUser = $query->fetch();
+    //     if ($existingUser){
+    //         return false;
+    //     }
+    //     $query = $con->prepare("INSERT INTO userss (username, passwords, firstname, lastname, birthday, sex) VALUES (?, ?, ?, ?, ?,?)");
+    //     $query->execute([$username, $password, $firstName, $lastName, $birthday, $sex]);
+    //    return $con->lastInsertId();
+    // }function insertAddress($user_id, $city, $province, $street, $barangay) {
+    //     $con = $this->opencon();
+    //     return $con->prepare("INSERT INTO user_addresss (user_id, user_add_city, user_add_province, user_add_street, user_add_barangay) VALUES (?, ?, ?, ?, ?)")
+    //         ->execute([$user_id, $city, $province, $street, $barangay]);
+    // }
+
+
+
+        function view ()
+    {
+        $con = $this->opencon();
+        return $con->query("SELECT userss.user_id, userss.username, userss.passwords, userss.Firstname, userss.Lastname, userss.birthday, userss.sex, userss.user_profile_picture, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;")
         ->fetchALL();
     }
     function delete($id)
@@ -51,7 +68,7 @@ return  $con->query($query)->fetch();
             $con = $this->opencon();
             $con->beginTransaction();
  
-            $query = $con->prepare("DELETE FROM user_address WHERE user_id =?");
+            $query = $con->prepare("DELETE FROM user_addresss WHERE user_id =?");
             $query->execute([$id]);
  
             $query = $con->prepare("DELETE FROM userss WHERE user_id =?");
@@ -67,7 +84,7 @@ return  $con->query($query)->fetch();
     function viewdata($id){
         try{
             $con = $this->opencon();
-            $query = $con->prepare("SELECT userss.user_id, userss.username, userss.passwords, userss.firstname, userss.lastname, userss.birthday, userss.sex, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;WHERE userss.user_id = ?");
+            $query = $con->prepare("SELECT userss.user_id, userss.username, userss.passwords, userss.Firstname, userss.Lastname, userss.birthday, userss.sex, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;WHERE userss.user_id = ?");
             $query->execute([$id]);
             return $query->fetch();
         } catch(PDOException $e) {

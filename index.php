@@ -23,6 +23,7 @@ if(isset($_POST['delete'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome!</title>
+  <link rel="stylesheet" href="./bootstrap-4.5.3-dist/css/bootstrap.css">
   <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -60,8 +61,8 @@ if(isset($_POST['delete'])) {
  
         <tr>
           <td><?php echo $counter++?></td>
-          <td><?php echo $rows['firstname'];?></td>
-          <td><?php echo $rows['lastname'];?></td>
+          <td><?php echo $rows['Firstname'];?></td>
+          <td><?php echo $rows['Lastname'];?></td>
           <td><?php echo $rows['birthday'];?></td>
           <td><?php echo $rows['sex'];?></td>
           <td><?php echo $rows['username'];?></td>
@@ -69,19 +70,20 @@ if(isset($_POST['delete'])) {
           <td>
             
  <!-- Update button -->      
-          <form action="update.php" method="POST" style="display: inline;">
-    <input type="hidden" name="id" value="<?php echo $rows['user_id'];?>">
-    <input type="submit" value="Update" class="btn btn-primary btn-sm">
-</form>
-        <!-- Delete button -->
+         <form action="Update.php" method="POST" style="display: inline;">
+            <input type="hidden" name="id" value="<?php echo $rows['user_id'];?>">
+            <input type="submit" value="Update" class="btn btn-primary btn-sm">
+        </form>
+ 
+<!-- Delete button -->
         <form method="POST" style="display: inline;">
-            <input type="hidden" name="id" value="<?php echo $rows ['user_id'];?>">
-            <input type="submit" name="Delete" value="Delete" class="btn btn-danger btn-sm"  onclick="return confirm('Are you sure you want to delete this user?')">
+            <input type="hidden" name="id" value="<?php echo $rows['user_id'];?>">
+            <input type="submit" name="delete" class="btn btn-danger btn-sm" value="Delete"
+            onclick="return confirm('Are you sure you want to delete this user?')">
         </form>
           </td>
         </tr>
-        <?php
-        }
+       <?php }
         ?>
  
         <!-- Add more rows for additional users -->
