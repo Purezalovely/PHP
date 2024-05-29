@@ -176,6 +176,23 @@ function check($username, $password) {
                 return true;
             }
           }
+
+          function updatePassword($userId, $hashedPassword){
+            try {
+                $con = $this->opencon();
+                $con->beginTransaction();
+                $query = $con->prepare("UPDATE users SET Pass_word = ? WHERE UserID = ?");
+                $query->execute([$hashedPassword, $userId]);
+                // Update successful
+                $con->commit();
+                return true;
+            } catch (PDOException $e) {
+                // Handle the exception (e.g., log error, return false, etc.)
+                 $con->rollBack();
+                return false; // Update failed
+            }
+            }
+
         
         }
          ?>
