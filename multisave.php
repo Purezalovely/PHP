@@ -1,32 +1,28 @@
 <?php
 
-require_once('Database.php');
+require_once('classes/database.php');
 
 $con = new database();
 if (isset($_POST['multisave'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $username =$_POST['username'];
-    $password=$_POST['password'];
-    $firstName=$_POST['firstName'];
-    $lastName=$_POST['lastName'];
-    $birthday=$_POST['birthday'];
-    $sex=$_POST['sex'];
-    //address information
-    $province = $_POST['province'];
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $birthday = $_POST['birthday'];
+    $sex = $_POST['sex'];
+    $Username = $_POST['Username'];
+    $password = $_POST['Pass_word'];
+    $confirm = $_POST['Pass_word'];
+    $street = $_POST['street'];
     $barangay = $_POST['barangay'];
-    $street= $_POST['street'];
     $city = $_POST['city'];
-    $confirm = $_POST['c_password'];
-    
-    
-    
+    $province = $_POST['province'];
+    $confirm = $_POST['cpass'];
+
     if ($password == $confirm) {
         // Passwords match, proceed with signup
-        $user_id = $con->signupUser($username, $password, $firstName, $lastName, $birthday, $sex); // Insert into users table and get user_id
+        $user_id = $con->signupUser($Username, $password, $firstname, $lastname, $birthday, $sex); // Insert into users table and get user_id
         if ($user_id) {
             // Signup successful, insert address into users_address table
-            if ($con->insertAddress($user_id, $city, $province, $barangay, $street)) {
+            if ($con->insertAddress($user_id, $street, $barangay, $city, $province)) {
                 // Address insertion successful, redirect to login page
                 header('location:login.php');
                 exit();
@@ -44,9 +40,6 @@ if (isset($_POST['multisave'])) {
     }
 }
 ?>
-
-
- 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -81,12 +74,12 @@ if (isset($_POST['multisave'])) {
       <div class="card-body">
         <div class="form-row">
           <div class="form-group col-md-6 col-sm-12">
-            <label for="firstName">FirstName:</label>
-            <input type="text" class="form-control" name="firstName" placeholder="Enter first name">
+            <label for="firstName">First Name:</label>
+            <input type="text" class="form-control" name="firstname" placeholder="Enter first name">
           </div>
           <div class="form-group col-md-6 col-sm-12">
-            <label for="lastName">LastName:</label>
-            <input type="text" class="form-control" name="lastName" placeholder="Enter last name">
+            <label for="lastName">Last Name:</label>
+            <input type="text" class="form-control" name="lastname" placeholder="Enter last name">
           </div>
         </div>
         <div class="form-row">
@@ -105,19 +98,19 @@ if (isset($_POST['multisave'])) {
         </div>
         <div class="form-group">
           <label for="username">Username:</label>
-          <input type="text" class="form-control" name="username" placeholder="Enter username">
+          <input type="text" class="form-control" name="Username" placeholder="Enter username">
         </div>
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" class="form-control" name="password" placeholder="Enter password">
+          <input type="password" class="form-control" name="Pass_word" placeholder="Enter password">
         </div>
         <div class="form-group">
-          <label for="password">c_password:</label>
-          <input type="password" class="form-control" name="c_password" placeholder="Enter password">
+          <label for="password">Confirm Password:</label>
+          <input type="password" class="form-control" name="cpass" placeholder="Enter password">
         </div>
       </div>
     </div>
-    
+
     <!-- Address Information -->
     <div class="card mt-4">
       <div class="card-header bg-info text-white">Address Information</div>

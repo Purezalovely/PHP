@@ -3,121 +3,162 @@ class database
 {
  function opencon(){
 return new PDO ('mysql:host=localhost;dbname=loginmethod','root', '');
-}  
-    function check($username, $password){
-$con=$this->opencon();
-$query = "SELECT * from userss WHERE username='".$username."'&& passwords='".$password."'";
-return  $con->query($query)->fetch();
- 
+}
+//function check($username, $password){
+//$con=$this->opencon();
+//$query = "SELECT * from users WHERE Username='".$username."'&& Pass_word='".$password."'";
+//return  $con->query($query)->fetch();
+
+function check($username, $password) {
+    // Open database connection
+    $con = $this->opencon();
+
+    // Prepare the SQL query
+    $stmt = $con->prepare("SELECT * FROM users WHERE Username = ?");
+    $stmt->execute([$username]);
+
+    // Fetch the user data as an associative array
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // If a user is found, verify the password
+    if ($user && password_verify($password, $user['Pass_word'])) {
+        return $user;
     }
-    function signup($username, $password, $firstname, $lastname, $birthday, $sex){
+
+    // If no user is found or password is incorrect, return false
+    return false;
+}
+
+
+
+
+
+
+
+
+
+    
+   function signup($username, $password, $firstname, $lastname, $birthday, $sex){
         $con = $this->opencon();
-        $query = $con->prepare("SELECT username FROM userss WHERE username = ?");
+       $query = $con->prepare("SELECT Username FROM users WHERE Username = ?");
         $query->execute([$username]);
-        $existingUser = $query->fetch();
+        $existingUser = $query->fetch();//
  
+
+
         if ($existingUser){
             return false;
         }
-        return $con->prepare("INSERT INTO userss (username, passwords, Firstname, Lastname, birthday, sex) VALUES (?,?,?,?,?,?)") ->execute([$username, $password, $firstname, $lastname, $birthday, $sex]);
-    }
-
-    function signupUser($firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture)
-    {
-        $con = $this->opencon();
-        // Save user data along with profile picture path to the database
-        $con->prepare("INSERT INTO userss (Firstname, Lastname, userss.birthday, sex, user_email, username, passwords, user_profile_picture) VALUES (?,?,?,?,?,?,?,?)")->execute([$firstname, $lastname, $birthday, $sex, $email, $username, $password, $profilePicture]);
-        return $con->lastInsertId();
-        }
-        function insertAddress($user_id, $street, $barangay, $city, $province)
-    {
-        $con = $this->opencon();
-        return $con->prepare("INSERT INTO user_addresss (user_id, user_add_street, user_add_barangay, user_add_city, user_add_province) VALUES (?,?,?,?,?)")->execute([$user_id, $street, $barangay,  $city, $province]);
-          
-    }
-
-    // function signupUser($username, $password, $firstName, $lastName, $birthday, $sex) {
+        return $con->prepare("INSERT INTO users (Username, Pass_word, firstname, lastname, birthday, sex) VALUES(?, ?, ?, ?, ?, ?)")
+        ->execute([$username, $password, $firstname, $lastname, $birthday, $sex]);
+     }
+    //     function signupUser($username, $password, $firstname, $lastname, $birthday, $sex){
     //     $con = $this->opencon();
-   
-    //     $query = $con->prepare("SELECT username FROM userss WHERE username = ?");
+
+    //     $query = $con->prepare("SELECT Username FROM users WHERE Username = ?");
     //     $query->execute([$username]);
     //     $existingUser = $query->fetch();
+ 
     //     if ($existingUser){
     //         return false;
     //     }
-    //     $query = $con->prepare("INSERT INTO userss (username, passwords, firstname, lastname, birthday, sex) VALUES (?, ?, ?, ?, ?,?)");
-    //     $query->execute([$username, $password, $firstName, $lastName, $birthday, $sex]);
-    //    return $con->lastInsertId();
-    // }function insertAddress($user_id, $city, $province, $street, $barangay) {
-    //     $con = $this->opencon();
-    //     return $con->prepare("INSERT INTO user_addresss (user_id, user_add_city, user_add_province, user_add_street, user_add_barangay) VALUES (?, ?, ?, ?, ?)")
-    //         ->execute([$user_id, $city, $province, $street, $barangay]);
+    //      $con->prepare("INSERT INTO users (Username, Pass_word, firstname, lastname, birthday, sex) VALUES(?, ?, ?, ?, ?, ?)")
+    //     ->execute([$username, $password, $firstname, $lastname, $birthday, $sex]);
+    //     return $con->lastInsertId();
     // }
 
+   function signupUser($firstname, $lastname, $birthday, $sex, $email, $username, $password, $profile_picture_path)
+   {
+       $con = $this->opencon();
+        //Save user data along with profile picture path to the database
+       $con->prepare("INSERT INTO users (firstname, lastname, birthday, sex, user_email, Username, Pass_word, user_profile_picture) VALUES (?,?,?,?,?,?,?,?)")
+       ->execute([ $firstname, $lastname, $birthday, $sex, $email, $username, $password, $profile_picture_path]);
+       return $con->lastInsertId();
+       }
+    
 
 
-        function view ()
-    {
+
+       function insertAddress($UserID, $street, $barangay, $city, $province) {
         $con = $this->opencon();
-        return $con->query("SELECT userss.user_id, userss.username, userss.passwords, userss.Firstname, userss.Lastname, userss.birthday, userss.sex, userss.user_profile_picture, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;")
-        ->fetchALL();
+
+        return $con->prepare("INSERT INTO  user_address (UserID, user_add_street, user_add_barangay,user_add_city, user_add_province) 
+        VALUES (?, ?, ?, ?, ?)")->execute([$UserID, $street, $barangay, $city, $province]);
+
+
+       }
+       function view(){
+        $con = $this->opencon();
+        return $con->query("SELECT users.UserID, users.firstname, users.lastname, users.birthday, users.sex, users.Username, users.Pass_word, users.user_profile_picture, CONCAT(user_address.user_add_street,' ', user_address.user_add_barangay,' ', user_address.user_add_city,' ', user_address.user_add_province) as address FROM users INNER JOIN user_address ON users.UserID = user_address.UserID")->fetchAll();
     }
+    
+
     function delete($id)
     {
-        try {
+        try{
             $con = $this->opencon();
             $con->beginTransaction();
- 
-            $query = $con->prepare("DELETE FROM user_addresss WHERE user_id =?");
+            $query = $con->prepare("DELETE FROM user_address
+            WHERE UserID =?");
             $query->execute([$id]);
- 
-            $query = $con->prepare("DELETE FROM userss WHERE user_id =?");
-           
+            $query = $con->prepare("DELETE FROM users WHERE UserID = ?");
+            $query->execute([$id]);
+
             $con->commit();
             return true;
-        } catch(PDOException $e) {
+          }  catch (PDOException $e) {
             $con->rollBack();
             return false;
+          } 
         }
-    }
 
-    function viewdata($id){
-        try{
-            $con = $this->opencon();
-            $query = $con->prepare("SELECT userss.user_id, userss.username, userss.passwords, userss.Firstname, userss.Lastname, userss.birthday, userss.sex, CONCAT(user_addresss.user_add_street,' ', user_addresss.user_add_barangay,' ', user_addresss.user_add_city,' ', user_addresss.user_add_province) AS address FROM userss JOIN user_addresss ON userss.user_id=user_addresss.user_id;WHERE userss.user_id = ?");
-            $query->execute([$id]);
-            return $query->fetch();
-        } catch(PDOException $e) {
-            return[];
+          function viewdata($id){
+              try{
+                
+                  $con = $this->opencon();
+                  $query = $con->prepare("SELECT users.UserID, users.firstname, users.lastname, users.birthday, users.sex, 
+                  users.Username, users.Pass_word,user_address.user_add_street,
+                   user_address.user_add_barangay, user_address.user_add_city, user_address.user_add_province 
+                   FROM users INNER JOIN user_address ON users.UserID = user_address.UserID WHERE users.UserID = ? ");
+                  $query->execute([$id]);
+                  return $query->fetch();
+
+              } catch (PDOException $e) {
+                return [];
+              }
+          }
+          
+          function updateUser($user_id, $firstname, $lastname, $birthday,$sex, $username, $password) {
+              try {
+                  $con = $this->opencon();
+                  $con->beginTransaction();
+                  $query = $con->prepare("UPDATE users SET firstname=?, lastname=?,birthday=?, sex=?,Username=?, Pass_word=? WHERE UserID=?");
+                  $query->execute([$firstname, $lastname,$birthday,$sex,$username, $password, $user_id]);
+                  // Update successful
+                  $con->commit();
+                  return true;
+              } catch (PDOException $e) {
+                  // Handle the exception (e.g., log error, return false, etc.)
+                   $con->rollBack();
+                  return false; // Update failed
+              }
+          }
+          
+          function updateUserAddress($user_id, $street, $barangay, $city, $province) {
+              try {
+                  $con = $this->opencon();
+                  $con->beginTransaction();
+                  $query = $con->prepare("UPDATE user_address SET user_add_street=?, user_add_barangay=?, user_add_city=?, user_add_province=? WHERE UserID=?");
+                  $query->execute([$street, $barangay, $city, $province, $user_id]);
+                  $con->commit();
+                  return true; // Update successful
+              } catch (PDOException $e) {
+                  // Handle the exception (e.g., log error, return false, etc.)
+                  $con->rollBack();
+                  return false; // Update failed
+              }
+               
+          }
+        
         }
-    }
-
-    function UpdateUser($user_id, $firstname, $lastname, $birthday, $sex, $username, $password){
-        try{
-            $con = $this->opencon();
-            $con->beginTransaction();
-            $query = $con->prepare("UPDATE userss SET user_Firstname=?,user_Lastname=?,user_birthday=?,user_sex=?,user_name=?,user_pass=? WHERE user_id=?");
-            $query->execute([$firstname, $lastname, $birthday, $sex, $username, $password, $user_id]);
-             
-            $con->commit();
-        } catch(PDOException $e) {
-            $con->rollBack(); 
-            return false;  
-    }
-  
-}
-
-function UpdateUserAddress($user_id, $street, $barangay, $city, $province,){
-    try{
-        $con = $this->opencon();
-        $con->beginTransaction();
-        $query = $con->prepare("UPDATE userss SET user_street=?,user_barangay=?,user_city=?,user_province=?, WHERE user_id=?");
-        $query->execute([$user_id, $street, $barangay, $city, $province,]);
-
-        $con->commit();
-    } catch(PDOException $e) {
-        $con->rollBack(); 
-        return false;  
-}
-}
-}
+         ?>
