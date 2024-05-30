@@ -1,17 +1,18 @@
 <?php
 require_once('classes/database.php');
-$con = new database();
+$con = new Database();
 session_start();
-
+ 
+ 
 $id = $_SESSION['UserID'];
 $data = $con->viewdata($id);
-
+ 
 if (isset($_POST['updatepassword'])) {
   $userId = $_SESSION['UserID'];
   $currentPassword = $_POST['current_password'];
   $newPassword = $_POST['new_password'];
   $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-  
+ 
   // Update the password in the database using the new method
           if ($con->updatePassword($userId, $hashedPassword)) {
               // Password updated successfully
@@ -22,8 +23,25 @@ if (isset($_POST['updatepassword'])) {
               header('Location: user_account.php?status=error');
               exit();
           }
-      
-  } 
+     
+  }
+if (isset($_POST['updateaddress'])) {
+  $user_id = $id;
+  $street = $_POST['user_street'];
+  $barangay = $_POST['barangay_text'];
+  $city = $_POST['city_text'];
+  $province = $_POST['province_text'];
+ 
+  if($con->updateUserAddress($user_id, $street, $barangay, $city, $province)){
+    // Address updated successfully
+    header('Location: user_account.php?status=success1');
+    exit();
+  }else{
+    // Failed to update address
+    header('Location: user_account.php?status=error');
+    exit();
+  }
+}
 ?>
  
 <!DOCTYPE html>
@@ -32,16 +50,26 @@ if (isset($_POST['updatepassword'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome!</title>
-  <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
+ 
+  <!-- jQuery for Address Selector -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ 
   <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./bootstrap-5.3.3-dist/css/bootstrap.css">
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+ 
   <!-- For Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="includes/style.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+ 
+  <!-- For Pop Up Notification -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ 
   <link rel="stylesheet" href="package/dist/sweetalert2.css">
+ 
+ 
   <style>
-   <style>
     .profile-header {
       text-align: center;
       margin: 20px 0;
@@ -69,7 +97,6 @@ if (isset($_POST['updatepassword'])) {
       padding: 20px;
     }
   </style>
-  </style>
 </head>
  <body>
  
@@ -84,9 +111,9 @@ if (isset($_POST['updatepassword'])) {
           <h3>Account Information</h3>
         </div>
         <div class="info-body">
-          <p><strong>First Name:</strong> <?php echo $data['firstname']; ?></p>
-          <p><strong>Last Name:</strong> <?php echo $data['lastname']; ?></p>
-          <p><strong>Birthday:</strong>  <?php echo $data['birthday']; ?></p>
+          <p><strong>First Name:</strong> <?php echo $data['firstname'];?> </p>
+          <p><strong>Last Name:</strong> <?php echo $data['lastname'];?> </p>
+          <p><strong>Birthday:</strong> <?php echo $data['birthday'];?> </p>
         </div>
       </div>
     </div>
@@ -98,10 +125,10 @@ if (isset($_POST['updatepassword'])) {
           <h3>Address Information</h3>
         </div>
         <div class="info-body">
-          <p><strong>Street:</strong>  <?php echo $data['user_add_street']; ?> </p>
-          <p><strong>Barangay:</strong> <?php echo $data['user_add_barangay']; ?></p>
-          <p><strong>City:</strong> <?php echo $data['user_add_city']; ?></p>
-          <p><strong>Province:</strong> <?php echo $data['user_add_province']; ?></p>
+          <p><strong>Street:</strong> <?php echo $data['user_add_street'];?> </p>
+          <p><strong>Barangay:</strong> <?php echo $data['user_add_barangay'];?> </p>
+          <p><strong>City:</strong> <?php echo $data['user_add_city'];?> </p>
+          <p><strong>Province:</strong> <?php echo $data['user_add_province'];?> </p>
          
         </div>
       </div>
@@ -112,30 +139,35 @@ if (isset($_POST['updatepassword'])) {
  
  
 <!-- Change Profile Picture Modal -->
-<div class="modal fade" id="changeProfilePictureModal" tabindex="-1" role="dialog" aria-labelledby="changeProfilePictureModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <form action="change_profile_picture.php" method="post" enctype="multipart/form-data">
-        <div class="modal-header">
-          <h5 class="modal-title" id="changeProfilePictureModalLabel">Change Profile Picture</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+    <!-- Modal for Profile Picture Upload -->
+    <div class="modal fade" id="changeProfilePictureModal" tabindex="-1" role="dialog" aria-labelledby="changeProfilePictureModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <form id="uploadProfilePicForm" enctype="multipart/form-data">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadProfilePicModalLabel">Upload Profile Picture</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="file" class="form-control form-control-file" id="profilePictureInput" name="profile_picture" accept="image/*" required>
+                    <small id="fileSizeError" class="form-text text-danger" style="display:none;">File size exceeds 5MB</small>
+                </div>
+                <div class="form-group">
+                    <img id="imagePreview" src="#" alt="Image Preview" style="display:none; width: 100%; height: auto;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </form>
         </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="profilePicture">Choose a new profile picture</label>
-            <input type="file" class="form-control" id="profilePicture" name="profile_picture" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
-</div>
+ 
  
 <!-- Update Account Information Modal -->
 <div class="modal fade" id="updateAccountInfoModal" tabindex="-1" role="dialog" aria-labelledby="updateAccountInfoModalLabel" aria-hidden="true">
@@ -196,44 +228,7 @@ if (isset($_POST['updatepassword'])) {
     </div>
   </div>
 </div>
-
-<!-- Update Account Information Modal -->
-<div class="modal fade" id="updateAccountInfoModal" tabindex="-1" role="dialog" aria-labelledby="updateAccountInfoModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <form action="update_account_info.php" method="post">
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateAccountInfoModalLabel">Update Account Information</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo $_SESSION['firstname']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo $_SESSION['lastname']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="birthday">Birthday</label>
-            <input type="date" class="form-control" id="birthday" name="birthday" value="<?php echo $_SESSION['birthday']; ?>" required>
-          </div>
-          <div class="form-group">
-            <label for="address">Address</label>
-            <input type="text" class="form-control" id="address" name="address" value="<?php echo $_SESSION['address']; ?>" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+ 
  
 <!-- Modal for Change Password -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
@@ -388,39 +383,14 @@ document.addEventListener('DOMContentLoaded', function() {
             saveChangesBtn.setAttribute('disabled', 'disabled');
         }
     }
-    if (isset($_POST['updateaddress'])) {
-  $user_id = $id;
-  $street = $_POST['user_street'];
-  $barangay = $_POST['barangay_text'];
-  $city = $_POST['city_text'];
-  $province = $_POST['province_text'];
-
-  if($con->updateUserAddress($user_id, $street, $barangay, $city, $province)){
-    // Address updated successfully
-    header('Location: user_account.php?status=success1');
-    exit();
-  }else{
-    // Failed to update address
-    header('Location: user_account.php?status=error');
-    exit();
-  }
-}
 });
  
 </script><!-- Password Validation Logic Ends Here -->
-
-
  
-<!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="./bootstrap-5.3.3-dist/js/bootstrap.js"></script>
-<!-- Bootsrap JS na nagpapagana ng danger alert natin -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- For Charts -->
-<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-<script src ="package/dist/sweetalert2.js"></script>
+<!-- SweetAlert2 Script For Pop Up Notification -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
+<!-- After the message is shown the whole website will be reloaded and the query parameters after the url will be removed so that the message only appear once. -->
 <!-- Pop Up Messages after a succesful transaction starts here --> <script>
 document.addEventListener('DOMContentLoaded', function() {
   const params = new URLSearchParams(window.location.search);
@@ -431,7 +401,12 @@ document.addEventListener('DOMContentLoaded', function() {
     switch (status) {
       case 'success':
         title = 'Success!';
-        text = 'Record is successfully changed.';
+        text = 'Password updated successfully.';
+        icon = 'success';
+        break;
+      case 'success1':
+        title = 'Success!';
+        text = 'Address was updated successfully.';
         icon = 'success';
         break;
       case 'error':
@@ -439,9 +414,15 @@ document.addEventListener('DOMContentLoaded', function() {
         text = 'Something went wrong.';
         icon = 'error';
         break;
+      case 'nomatch':
+        title = 'Error!';
+        text = 'Passwords do not match.';
+        icon = 'error';
+        break;
       default:
         return;
     }
+ 
     Swal.fire({
       title: title,
       text: text,
@@ -453,6 +434,134 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
- 
 </script> <!-- Pop Up Messages after a succesful transaction ends here -->
+ 
+ 
+<!-- Change Profile Picture Logic Starts here --><script>
+    $(document).ready(function() {
+        $('#profilePictureInput').change(function() {
+            const file = this.files[0];
+            if (file) {
+                // Check file size
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'File size exceeds 5MB.',
+                        icon: 'error'
+                    });
+                    $('#imagePreview').hide();
+                    $('#uploadProfilePicForm').data('valid', false);
+                    return;
+                } else {
+                    $('#fileSizeError').hide();
+                    $('#uploadProfilePicForm').data('valid', true);
+                }
+ 
+                // Preview the image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#imagePreview').attr('src', e.target.result);
+                    $('#imagePreview').show();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+ 
+        $('#uploadProfilePicForm').submit(function(event) {
+            event.preventDefault();
+            if (!$(this).data('valid')) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'File size exceeds 5MB.',
+                    icon: 'error'
+                });
+                return;
+            }
+ 
+            const formData = new FormData(this);
+            $.ajax({
+                url: 'upload_profile_picture.php', // Change this to your PHP file
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    try {
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+                        if (response.success) {
+                            $('#profilePicPreview').attr('src', response.filepath);
+                            $('#changeProfilePictureModal').modal('hide');
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Profile picture updated successfully.',
+                                icon: 'success'
+                            }).then(() => {
+                                // Reload the page after displaying the success message
+                                window.location.href = window.location.href.split('?')[0];
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.error,
+                                icon: 'error'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while processing the response.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while uploading the file.',
+                        icon: 'error'
+                    });
+                }
+            });
+        });
+    });
+    </script><!-- Change Profile Picture Logic Ends here -->
+ 
+<!-- For Address Selector Validation --><script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Fetch region, province, city, and barangay options dynamically if needed
+  // Example for adding event listeners for dynamic fetching
+  // document.getElementById('region').addEventListener('change', fetchProvinces);
+ 
+  // Example of a function to fetch provinces
+  // function fetchProvinces() {
+  //   const regionId = document.getElementById('region').value;
+  //   // Fetch provinces based on regionId
+  // }
+ 
+  // Form validation
+  var form = document.getElementById('updateAccountForm');
+  form.addEventListener('submit', function(event) {
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    form.classList.add('was-validated');
+  }, false);
+});
+</script><!-- For Address Selector Validation -->
+ 
+ 
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!-- Make Sure jquery3.6.0 is before the ph-address-selector.js -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="ph-address-selector.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ 
+<script src="package/dist/sweetalert2.js"></script>
+ 
+ 
+</body>
+</html>
